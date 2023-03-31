@@ -14,41 +14,77 @@
       </form>
     </div>
     <div class="list-container">
-    <ul v-for="(Product,index) in state.Products" :key="index">
-      <li>
-        {{Product}}
-        <span style="float:right;padding-right:10px;">
-          <button @click="removeProduct(index)">X</button>
-        </span>
-      </li>
-    </ul>
+      <ul>
+        <li v-for="(Product, index) in state.Products" :key="index">
+          <template v-if="index !== state.editingIndex">
+            <div>
+              {{ Product }}
+              <span style="float:right;padding-right:10px;">
+                <button @click="removeProduct(index)">X</button>
+                <button @click="startEditing(index)">Edit</button>
+              </span>
+            </div>
+          </template>
+          <template v-else>
+            <div>
+              <input type="text" :value="state.editingProduct" @input="updateEditingProduct($event.target.value)" />
+              <button @click="saveEditingProduct(index)">Save</button>
+              <button @click="cancelEditing()">Cancel</button>
+            </div>
+          </template>
+        </li>
+      </ul>
     </div>
   </section>
 </template>
+
 <script>
 import { reactive } from "vue";
 
 export default {
   setup() {
-      const { state, addProduct, removeProduct } = ProductList();
-      return { state, addProduct, removeProduct };
-    }
+    const { state, addProduct, removeProduct, startEditing, updateEditingProduct, saveEditingProduct, cancelEditing } = ProductList();
+    return { state, addProduct, removeProduct, startEditing, updateEditingProduct, saveEditingProduct, cancelEditing };
+  }
 };
+
 function ProductList() {
- let state = reactive({
-   input: "",
-   Products: ["Product 1"]
- });
+  const state = reactive({
+    input: "",
+    Products: ["Product 1"],
+    editingIndex: -1,
+    editingProduct: "",
+  });
 
- let addProduct = () => {
-  state.Products.push(state.input);
-  state.input = "";
- };
+  const addProduct = () => {
+    state.Products.push(state.input);
+    state.input = "";
+  };
 
- let removeProduct = i => {
-  state.Products.splice(i, 1);
- };
- return { state, addProduct, removeProduct };
+  const removeProduct = (i) => {
+    state.Products.splice(i, 1);
+  };
+
+  const startEditing = (i) => {
+    state.editingIndex = i;
+    state.editingProduct = state.Products[i];
+  };
+
+  const updateEditingProduct = (value) => {
+    state.editingProduct = value;
+  };
+
+  const saveEditingProduct = (i) => {
+    state.Products[i] = state.editingProduct;
+    state.editingIndex = -1;
+  };
+
+  const cancelEditing = () => {
+    state.editingIndex = -1;
+    state.editingProduct = "";
+  };
+
+  return { state, addProduct, removeProduct, startEditing, updateEditingProduct, saveEditingProduct, cancelEditing };
 }
 </script>
 <style scoped>
